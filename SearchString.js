@@ -1,34 +1,34 @@
 //Load a book from disk
 function loadBook(filename, displayName) {
-    let currentBook = "";
-    let url = "books/" + filename;
+    const url = "books/" + filename;
 
-    //reset our UI
+    // Reset our UI
     document.getElementById("fileName").innerHTML = displayName;
     document.getElementById("searchstat").innerHTML = "";
     document.getElementById("keyword").value = "";
 
-    //create a server a request to load our book
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
-    xhr.send();
+    // Use Fetch API to get the book content
+    fetch(url)
+        .then(response => {
+            // Check if the response is successful, throw error otherwise
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(data => {
+            getDocStats(data);
 
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-            currentBook = xhr.responseText;
+            // Remove line breaks and carriage returns and replace with a <br>
+            const formattedData = data.replace(/(?:\r\n|\r|\n)/g, '<br>');
+            document.getElementById("fileContent").innerHTML = formattedData;
 
-            getDocStats(currentBook);
-
-            //remove line breaks and carriage returns and replace with a <br>
-            currentBook = currentBook.replace(/(?:\r\n|\r|\n)/g, '<br>');
-
-            document.getElementById("fileContent").innerHTML = currentBook;
-
-            var elmnt = document.getElementById("fileContent");
+            const elmnt = document.getElementById("fileContent");
             elmnt.scrollTop = 0;
-
-        }
-    };
+        })
+        .catch(error => {
+            console.log('Fetch error: ' + error.message);
+        });
 }
 
 //get the stats for the book
